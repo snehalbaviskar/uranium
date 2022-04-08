@@ -3,7 +3,7 @@ const logger = require('./logger')
 
 const router = express.Router();
 
-router.get('/test-me', function (req, res) {
+router.get('/candidates', function (req, res) {
     console.log('------------------')
     console.log(req)
     console.log('------------------')
