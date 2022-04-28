@@ -7,7 +7,9 @@ const BlogController = require('../controller/blogController')
 router.post('/createAuthor', AuthorController.createAuthor)
 router.post('/createBlog', BlogController.createBlog)
 router.get('/getblog',BlogController.getblog)
-router.put('/updateblog', BlogController.updateblog)
+router.put('/updateblog/:blogId', BlogController.updateblog)
+router.delete('/deleteById/:blogId', BlogController.deleteById)
+router.delete('/deleteBlogByParam', BlogController.deleteBlogByParam)
 
 
 
