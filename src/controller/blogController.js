@@ -1,9 +1,10 @@
 const { default: mongoose } = require('mongoose');
 const blogModel = require('../models/blogModel');
 
-const isValidObjectId =function(Id){
-    return mongoose.Types.ObjectId.isValid(Id)
-}
+// const isValidObjectId =function(Id){
+//     return mongoose.Types.ObjectId.isValid(Id)
+// }
+
 const isValid = function(value)
 {
     if(typeof value === 'undefined' || value === null){
@@ -18,7 +19,6 @@ const isValid = function(value)
 
 
 
-
 const createBlog = async function(req,res){
     try{
     let data = req.body
@@ -28,6 +28,7 @@ const createBlog = async function(req,res){
     let authorId = req.body.authorId
     if(!isValidObjectId(authorId))
     return res.status(400).send({status:false, msg:"author Id is not exist"})
+
     let blogCreated = await blogModel.create(data)
     res.status(201).send({data : blogCreated})
     }
@@ -59,7 +60,8 @@ const getblog = async function(req,res){
     let blogs = await blogModel.find(filter)
     
     if(blogs.length==0)
-    res.status(404).send({status:false, msg:"document not found"})
+    res.status(404).send({status:false, msg:"no such document exist or it may be deleted"})
+    
     res.status(200).send({status:true, data: blogs})
 }
 catch(err){
@@ -68,44 +70,42 @@ catch(err){
 
 }
 
-const updateblog =async function(req,res){
-    try{
-    let data = req.body
-   
+const updateblog = async function (req, res) {
+    try{  
+        let data =  req.body; 
+        let blogId = req.params.blogId;
+        const tag1 = req.body.tags;
+        const subcategory = req.body.subcategory;
+        const title = req.body.title;
+        const bod = req.body.body;
+  
+        let blog = await blogModel.findById(blogId)
+        
+        if(!blog){
+        return res.status(404).send("No such blog exists");
+        }
+  
+        if(blog.isDeleted){
+        return res.status(400).send({ status: false, msg: "Blog not found, may be deleted" })
+        }
+  
+        // data["publishedAt"]= Date.now();
+  
+        let updatedblog = await blogModel.findByIdAndUpdate({ _id: blogId },{ $addToSet :{tags : tag1,subcategory : subcategory} , $set : {title : title , body : bod, publishedAt: Date.now()}},{new:true});
+  
+        res.status(201).send({ msg: "done", data: updatedblog });
+    }
+    catch (err){
+        res.status(500).send({ msg: "Error", error: err.message })
+    }
+  }
 
-    let blogId = req.params.blogId
-   
-    let blog = await blogModel.findById(blogId)
-    console.log(blog)
-
-    if(!isValid(data))
-    return res.status(404).send({status:false, msg:" No such document is not present"})
-
-
-    if(!isValidObjectId(blogId))
-    return res.status(404).send({status:false, msg: "No such blogId is exist"})
-
-    if(blog.isDeleted==true)
-    return res.status(404).send({status:false, msg: "No such blog exist or the blog is delted"})
-    
-
-
-    let updatedBlog = await blogModel.findByIdAndUpdate({_Id:blogId}, {$set:data},{new:true, publishedAt:Date.now()}) 
-    res.status(200).send({status:true, data:updatedBlog}) 
-}
-catch(err){
-    res.status(500).send({msg:"Error", error:err.message})
-} 
-    
-}
 
 const deleteById =async function(req,res){
 
     try{
     let blogId  =req.params.blogId
 
-    if(!!isValidObjectId(blogId))
-    return res.status(404).send({status:false, msg: "No such blogId is exist"})
    
     let blog = await blogModel.findOne({$and:[{_id:blogId},{isDeleted:false}]})
   
