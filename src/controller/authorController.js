@@ -18,12 +18,25 @@ const isValid = function(value)
 const createAuthor = async function(req,res){
     try{
 
-    let author = req.body
+    let data = req.body
+    let {Fname, Lname, title, email, password}= data
 
-    if(!author)
-    res.status(404).send({status:false, msg: "no such author exist"})
+    if(!isValid(Fname))
+    return res.status(400).send({status:false, msg : "Fname is not exist"})
 
-    let authorCreated = await authorModel.create(author)
+    if(!isValid(Lname))
+    return res.status(400).send({status:false, msg : "Lname is not exist"})
+
+    if(!isValid(title))
+    return res.status(400).send({status:false, msg:"title is not exist"})
+
+    if(!isValid(email))
+    return res.status(400).send({status:false, msg:"email is not exist"})
+
+    if(!isValid(password))
+    return res.status(400).send({status:false, msg:"password is not exist"})
+
+    let authorCreated = await authorModel.create(data)
     res.status(201).send({status:true, data : authorCreated})
 }
 catch(err){
@@ -35,10 +48,16 @@ catch(err){
 const loginAuthor = async function (req, res) {
     try{
 
-    let emailID = req.body.email;
+    let email = req.body.email;
     let password = req.body.password;
+
+    if(!isValid(email))
+    return res.status(400).send({status:false, msg:"email must be present"})
+
+    if(!isValid(password))
+    return res.status(400).send({status:false, msg:"password must be present"})
   
-    let author = await authorModel.findOne({ email: emailID, password: password });
+    let author = await authorModel.findOne({ email: email, password: password });
 
     if (!author)
       return res.status(401).send({status: false,msg: "emailID and the password is not corerct",});

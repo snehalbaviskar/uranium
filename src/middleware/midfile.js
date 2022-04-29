@@ -5,7 +5,7 @@ const authentication = async function(req,res,next){
         let token  = (req.headers["x-api-key"])
 
         if (!token){
-        return res.status(400).send({status: false, msg: "Token is not present",});
+        return res.status(400).send({status: false, msg: "Token must be present",});
         }
 
         let decodedToken = jwt.verify(token, "author-blog")
@@ -27,22 +27,19 @@ const authentication = async function(req,res,next){
 
 const authorization = async function(req,res,next){
     try{
-        // let id =req.authorId
+        let id =req.authorId
         let token  = (req.headers["x-api-key"])
         let decodedToken = jwt.verify(token, "author-blog")
-        let userToBeModified = req.param.authorId
 
-        let userLoggedIn = decodedToken.authorId
-        if(userToBeModified===userLoggedIn){
+        if(!id)
+        res.status(401).send({status: false, msg: "authorId must be present"});
+
+        if(id==decodedToken.authorId){
             next()
-        }
-        else{
-            // if(!id)
+        }else{
             res.status(401).send({status: false, msg: "author logged in is not allowed to modify or access the author data"});
+        }
     }
-
-    }
-
 
 catch (err){
     res.status(500).send({ msg: "Error", error: err.message })

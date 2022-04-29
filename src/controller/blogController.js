@@ -24,13 +24,14 @@ const createBlog = async function(req,res){
     let data = req.body
     
     let {title, body, authorId, category}= data
+
     if(!isValid(title))
     return res.status(400).send({status:false, msg : "title is not exist"})
 
     if(!isValid(body))
     return res.status(400).send({status:false, msg : "body is is not exist"})
 
-    if(!isValid(authorId))
+    if(!authorId)
     return res.status(400).send({status:false, msg:"author Id is not exist"})
 
     if(!isValid(category))
@@ -56,7 +57,7 @@ const getblog = async function(req,res){
     if (!token) return res.send({ status: false, msg: "token must be present" });
 
     let data = req.query
-    const {authorId , category, subcategory, tags} =data
+    let {authorId , category, subcategory, tags} =data
 
     let filter = {isDeleted: false, isPublished:true}
     if(authorId){
@@ -89,22 +90,31 @@ const updateblog = async function (req, res) {
     try{  
         let data =  req.body; 
         let blogId = req.params.blogId;
-        const tags = req.body.tags;
-        const subcategory = req.body.subcategory;
-        const title = req.body.title;
-        const body = req.body.body;
-  
+        let {tags, subcategory, title, body}= data
+
+        if(!isValid(tags))
+    return res.status(400).send({status:false, msg : "tags is not exist"})
+
+    if(!isValid(subcategory))
+    return res.status(400).send({status:false, msg : "subcategory is not exist"})
+
+    if(!isValid(title))
+    return res.status(400).send({status:false, msg : "title is not exist"})
+
+    if(!isValid(body))
+    return res.status(400).send({status:false, msg : "body is not exist"})
+        
         let blog = await blogModel.findById(blogId)
         
         if(!blog){
-        return res.status(404).send("No such blog exists");
+        return res.status(404).send("No such document exists");
         }
   
         if(blog.isDeleted){
         return res.status(400).send({ status: false, msg: "Blog not found, may be it is deleted" })
         }
   
-        // data["publishedAt"]= Date.now();
+    
   
         let updatedblog = await blogModel.findByIdAndUpdate({ _id: blogId },{ $addToSet :{tags : tags, subcategory : subcategory} , $set : {title : title , body : body, publishedAt: Date.now()}},{new:true});
   
@@ -144,8 +154,28 @@ let deleteBlogByParam = async function(req,res){
 
   try{
     let data = req.query
-    if(!data)
-    res.status(404).send({status:false, msg: "No such document exist or the blog is deleted"})
+
+    // if(!data)
+    // res.status(404).send({status:false, msg: "No such document exist or the blog is deleted"})
+
+    let {category, authorid, tags, subcategory, isPublished} = data
+
+    if(!isValid(category))
+    return res.status(400).send({status:false, msg : "category is not exist"})
+
+    if(!authorid)
+    return res.status(400).send({status:false, msg : "authorid is not exist"})
+
+    if(!isValid(tags))
+    return res.status(400).send({status:false, msg : "tags is not exist"})
+
+    if(!isValid(subcategory))
+    return res.status(400).send({status:false, msg : "subcategory is not exist"})
+
+    if(!isValid(isPublished))
+    return res.status(400).send({status:false, msg : "tags is not exist"})
+
+
     
     let blog = await blogModel.find(data).select({authorId:1, _id:1})
 
