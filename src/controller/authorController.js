@@ -1,4 +1,3 @@
-
 // const Isemail = require('isemail');
 const authorModel = require('../models/authorModel');
 const jwt = require("jsonwebtoken");
@@ -14,6 +13,9 @@ const isValid = function(value)
     return true
 
 }
+
+//Create an author - atleast 5 authors
+//Create a author document from request body. Endpoint: BASE_URL/authors
 
 const createAuthor = async function(req,res){
     try{
@@ -45,6 +47,10 @@ catch(err){
     
 }
 
+
+// Allow an author to login with their email and password. On a successful login attempt return a JWT token contatining the authorId
+// If the credentials are incorrect return a suitable error message with a valid HTTP status code
+
 const loginAuthor = async function (req, res) {
     try{
 
@@ -75,7 +81,6 @@ catch (err){
     res.status(500).send({ msg: "Error", error: err.message })
 }
 };
-
 
 module.exports.createAuthor = createAuthor
 module.exports.loginAuthor = loginAuthor
