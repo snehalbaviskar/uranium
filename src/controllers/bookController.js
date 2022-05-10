@@ -58,29 +58,3 @@ const getFilteredBooks = async (req, res) => {
 
 module.exports = {createBook, getFilteredBooks}
 
-
-
-
-
-
-// if(data.hasOwnProperty('userId')){
-//     if(!isValidObjectId(data.userId)) return res.status(400).send({status: false, message: "Enter a valid user Id"})
-//     let { ...tempData } = data
-//     delete(tempData.userId)
-//     let checkValues = Object.values(tempData)
-//     if(validString(checkValues)) return res.status(400).send({status: false, message: "filter data should not contain"})
-//     }else{
-//         let checkValues = Object.values(data)
-//         if(validString(checkValues)) return res.status(400).send({status: false, message: "filter data should not contain"})
-//     }
-
-//     if(checkData(data)){
-//         let getBooks = await bookModel.find({isDeleted: false}).sort({title: 1}).select({title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1})
-//         if(getBooks.length == 0) return res.status(404).send({status: false, message: "No books found"})
-//         return res.status(200).send({status: true, message: "Book List", data: getBooks})
-//     }
-//     data.isDeleted = false
-
-//     let getFilterBooks = await userModel.find(data).sort({title: 1}).select({title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1})
-//     if(getFilterBooks.length == 0) return res.status(404).send({status: false, message: "No books found"})
-//         return res.status(200).send({status: true, message: "Book List", data: getFilterBooks})
