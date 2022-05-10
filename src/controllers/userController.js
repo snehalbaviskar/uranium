@@ -26,7 +26,7 @@ const createUser= async function(req, res) {
     if(checkUniqueValues) return res.status(400).send({status: false, message: "E-Mail or phone number already exist"})
 
     //hass password
-    data.password = await bcrypt.hash(data.password, 10);
+    data.password = await bcrypt.hash(data.password, 10); 
 
 
     let userData= await userModel.create(data)
