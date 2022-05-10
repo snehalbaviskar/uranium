@@ -19,11 +19,11 @@ const createBook= async function (req, res) {
 
     //check the userId in model
     
-    let availableUserId = await userModel.findById(data.userId)
-    console.log(availableUserId)
-    if (!availableUserId) {
-      return res.status(404).send({ status: false, message: "User not found" })
-    }
+    // let availableUserId = await userModel.findById(data.userId)
+    // console.log(availableUserId)
+    // if (!availableUserId) {
+    //   return res.status(404).send({ status: false, message: "User not found" })
+    // }
 
     //validate title, excerpt, category,subcategory
     if(validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)){
@@ -84,5 +84,26 @@ const getFilteredBooks = async (req, res) => {
     }
 } 
 
-module.exports = {createBook, getFilteredBooks}
+const getBookById = async (req, res) => {
+  try{
+    let bookId = req.params.bookId
+    if(!isValidObjectId(bookId)) return res.status(400).send({status: false, message: "Enter a correct book id"})
+    let getBook = await bookModel.findById(bookId).select({__v: 0})
+    if(!getBook) return res.status(404).send({status: false, message: "No Book found"})
+    
+    let  {...data } = getBook._doc
+
+    data.reviewsData = []
+
+    res.status(200).send({status: true, message: "Books lists", data: data})
+  }catch(err){
+    return res.status(500).send({status: false, Error: err.message})
+}
+  
+}
+
+
+
+
+module.exports = {createBook, getFilteredBooks, getBookById}
 
