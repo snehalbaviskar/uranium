@@ -1,7 +1,6 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 
-
 const { checkData, validString, isValidObjectId} = require("../validator/validation")
 
 const createBook= async function (req, res) {
@@ -11,17 +10,20 @@ const createBook= async function (req, res) {
     if(checkData(data)) return res.status(400).send({status: false, message: "Enter Books Details"})
 
     //check the value is present or not
-    if(!data.title) return res.status(400).send({status: false, message: "Title is required"})
+    if(!data.title) return res.status(400).send({status: false, message: "Book Title is required"})
     if(!data.excerpt) return res.status(400).send({status: false, message: "Excerpt is required"})
     if(!data.userId) return res.status(400).send({status: false, message: "UserId is required"})
     if(!data.ISBN) return res.status(400).send({status: false, message: "ISBN is required"})
     if(!data.category) return res.status(400).send({status: false, message: "category is required"})
     if(!data.subcategory) return res.status(400).send({status: false, message: "subcategory is required"})
-    if(!data.releasedAt) return res.status(400).send({status: false, message: "releasedAt is required"})
 
     //check the userId in model
-    const availableUserId = await userModel.findById(data.userId)
-    if(!availableUserId) return res.status(404).send({status: false, message: "user not found"})
+    
+    let availableUserId = await userModel.findById(data.userId)
+    console.log(availableUserId)
+    if (availableUserId) {
+      return res.status(404).send({ status: false, message: "User not found" })
+    }
 
     //validate title, excerpt, category,subcategory
     if(validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)){
@@ -35,6 +37,7 @@ const createBook= async function (req, res) {
     //set date in releasedAt
     let releasedAtTime = new Date()
     data.releasedAt = releasedAtTime.getFullYear() + "-" + (releasedAtTime.getMonth() + 1) + "-" + releasedAtTime.getDate()
+    
 
     //create book data
     let bookData= await bookModel.create(data)
@@ -46,11 +49,36 @@ const createBook= async function (req, res) {
 
 const getFilteredBooks = async (req, res) => {
     try{
-        let data = req.query
+    let data = req.query;
 
-        //data.isDeleted = false
-        let getFilterBooks = await bookModel.find({isDeleted: false, ...data})
-        res.status(201).send({status: true, data: getFilterBooks})
+    if (data.hasOwnProperty('userId')) {
+      if (!isValidObjectId(data.userId)) return res.status(400).send({ status: false, message: "Enter a valid user id" });
+      let { ...tempData } = data;
+      delete (tempData.userId);
+      let checkValues = Object.values(tempData);
+
+      if (validString(checkValues)) return res.status(400).send({ status: false, message: "Filter data should not contain numbers excluding user id" })
+    } else {
+      let checkValues = Object.values(data);
+
+      if (validString(checkValues)) return res.status(400).send({ status: false, message: "Filter data should not contain numbers excluding user id" })
+    }
+
+    if (checkData(data)) {
+      let getBooks = await bookModel.find({ isDeleted: false }).sort({ title: 1 }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 });
+
+      if (getBooks.length == 0) return res.status(404).send({ status: false, message: "No books found" });
+      return res.status(200).send({ status: true, message: "Books list", data: getBooks });
+    }
+
+    data.isDeleted = false;
+
+    let getFilterBooks = await bookModel.find(data).sort({ title: 1 }).select({ title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1 });
+
+    if (getFilterBooks.length == 0) return res.status(404).send({ status: false, message: "No books found" });
+
+    res.status(200).send({ status: true, message: "Books list", data: getFilterBooks });
+
     }catch(err){
         return res.status(500).send({status: false, Error: err.message})
     }
