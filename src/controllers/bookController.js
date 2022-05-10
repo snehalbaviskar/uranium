@@ -1,7 +1,8 @@
-const { default: mongoose } = require("mongoose")
 const bookModel = require("../models/bookModel")
+const userModel = require("../models/userModel")
 
-const validator = require("../validator/validation")
+
+const { checkData, validString, isValidObjectId} = require("../validator/validation")
 
 const createBook= async function (req, res) {
     try{
@@ -9,7 +10,7 @@ const createBook= async function (req, res) {
 
     if(checkData(data)) return res.status(400).send({status: false, message: "Enter Books Details"})
 
-    
+    //check the value is present or not
     if(!data.title) return res.status(400).send({status: false, message: "Title is required"})
     if(!data.excerpt) return res.status(400).send({status: false, message: "Excerpt is required"})
     if(!data.userId) return res.status(400).send({status: false, message: "UserId is required"})
@@ -18,11 +19,24 @@ const createBook= async function (req, res) {
     if(!data.subcategory) return res.status(400).send({status: false, message: "subcategory is required"})
     if(!data.releasedAt) return res.status(400).send({status: false, message: "releasedAt is required"})
 
-    if(validator.validString(data.title)) return res.status(400).send({status: false, message: "Title should be String"})
-    if(validator.validString(data.excerpt)) return res.status(400).send({status: false, message: "excerpt should be string"})
-    if(validator.isValidObjectId(data.userId)) return res.status(400).send({status: false, message: "Enter a valid userId"})
-    
+    //check the userId in model
+    const availableUserId = await userModel.findById(data.userId)
+    if(!availableUserId) return res.status(404).send({status: false, message: "user not found"})
 
+    //validate title, excerpt, category,subcategory
+    if(validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)){
+        return res.status(400).send({status: false, message: "data should not contain Numbers its only contains Characters"})
+    }
+    
+    //check title and isbn is unique or not
+    let checkUniqueValues = await bookModel.findOne({$or: [{title: data.title}, {ISBN: data.ISBN}]})
+    if(checkUniqueValues) return res.status(400).send({status: false, message: "Title or ISBN is already exist"})
+
+    //set date in releasedAt
+    let releasedAtTime = new Date()
+    data.releasedAt = releasedAtTime.getFullYear() + "-" + (releasedAtTime.getMonth() + 1) + "-" + releasedAtTime.getDate()
+
+    //create book data
     let bookData= await bookModel.create(data)
     res.status(201).send({status: true, message: "Books created successfully", data: bookData})
     }catch(err){
@@ -30,4 +44,43 @@ const createBook= async function (req, res) {
     }
 }
 
-module.exports = {createBook}
+const getFilteredBooks = async (req, res) => {
+    try{
+        let data = req.query
+
+        //data.isDeleted = false
+        let getFilterBooks = await bookModel.find({isDeleted: false, ...data})
+        res.status(201).send({status: true, data: getFilterBooks})
+    }catch(err){
+        return res.status(500).send({status: false, Error: err.message})
+    }
+} 
+
+module.exports = {createBook, getFilteredBooks}
+
+
+
+
+
+
+// if(data.hasOwnProperty('userId')){
+//     if(!isValidObjectId(data.userId)) return res.status(400).send({status: false, message: "Enter a valid user Id"})
+//     let { ...tempData } = data
+//     delete(tempData.userId)
+//     let checkValues = Object.values(tempData)
+//     if(validString(checkValues)) return res.status(400).send({status: false, message: "filter data should not contain"})
+//     }else{
+//         let checkValues = Object.values(data)
+//         if(validString(checkValues)) return res.status(400).send({status: false, message: "filter data should not contain"})
+//     }
+
+//     if(checkData(data)){
+//         let getBooks = await bookModel.find({isDeleted: false}).sort({title: 1}).select({title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1})
+//         if(getBooks.length == 0) return res.status(404).send({status: false, message: "No books found"})
+//         return res.status(200).send({status: true, message: "Book List", data: getBooks})
+//     }
+//     data.isDeleted = false
+
+//     let getFilterBooks = await userModel.find(data).sort({title: 1}).select({title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1})
+//     if(getFilterBooks.length == 0) return res.status(404).send({status: false, message: "No books found"})
+//         return res.status(200).send({status: true, message: "Book List", data: getFilterBooks})
