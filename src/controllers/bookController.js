@@ -21,7 +21,7 @@ const createBook= async function (req, res) {
     
     let availableUserId = await userModel.findById(data.userId)
     console.log(availableUserId)
-    if (availableUserId) {
+    if (!availableUserId) {
       return res.status(404).send({ status: false, message: "User not found" })
     }
 
