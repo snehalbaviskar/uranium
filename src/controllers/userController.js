@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken')
 
 const { checkData, validTitle, validString, validMobileNum, validEmail, validPwd} = require("../validator/validation")
 
+/////////////////////////////////////////////////create User/////////////////////////////////////////////////////////////////////
+
 const createUser= async function(req, res) {
     try{
     let data= req.body
@@ -36,6 +38,7 @@ const createUser= async function(req, res) {
     }
 }
 
+/////////////////////////////////////////////////////////Login User///////////////////////////////////////////////////////////////
 
 const loginUser = async (req, res) => {
     try{
