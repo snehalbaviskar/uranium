@@ -1,17 +1,14 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 
-const currentFullDate = () => {
-  let releasedAtTime = new Date()
-  data.releasedAt = releasedAtTime.getFullYear() + "-" + (releasedAtTime.getMonth() + 1) + "-" + releasedAtTime.getDate()
-  }
+
 
 const {checkData,validString,isValidObjectId,validDate} = require("../validator/validation")
 
 ////////////////////////////////////////////////////create Book////////////////////////////////////////////////////////////////////
 
 const createBook = async function (req, res) {
-  try {
+ // try {
     let data = req.body
 
     if (checkData(data)) return res.status(400).send({status: false,message: "Enter Books Details"})
@@ -41,14 +38,15 @@ const createBook = async function (req, res) {
     if (checkUniqueValues) return res.status(400).send({status: false,message: "Title or ISBN is already exist"})
 
     //set date in releasedAt
-    data.releasedAt = currentFullDate();
+   // data.releasedAt = currentFullDate();
+   if(validDate(data.releasedAt)) return res.status(400).send({status: false, message: "enter a valid released date in (YYYY-DD-MM) format"})
 
     //create book data
     let bookData = await bookModel.create(data)
     res.status(201).send({status: true,message: "Books created successfully",data: bookData})
-  } catch (err) {
-    res.status(500).send({status: false,Error: err.message})
-  }
+//   }// catch (err) {
+//     res.status(500).send({status: false,Error: err.message})
+//   }
 }
 
 ////////////////////////////////////////////////////get Book by query params////////////////////////////////////////////////////////
