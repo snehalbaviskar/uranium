@@ -3,12 +3,13 @@ const userModel = require("../models/userModel")
 
 
 
+
 const {checkData,validString,isValidObjectId,validDate} = require("../validator/validation")
 
 ////////////////////////////////////////////////////create Book////////////////////////////////////////////////////////////////////
 
 const createBook = async function (req, res) {
- // try {
+  try {
     let data = req.body
 
     if (checkData(data)) return res.status(400).send({status: false,message: "Enter Books Details"})
@@ -22,12 +23,12 @@ const createBook = async function (req, res) {
     if (!data.subcategory) return res.status(400).send({status: false,message: "subcategory is required"})
 
     //check the userId in model
-
-    // let availableUserId = await userModel.findById(data.userId)
-    // console.log(availableUserId)
-    // if (!availableUserId) {
-    //   return res.status(404).send({ status: false, message: "User not found" })
-    // }
+    let data1 = data.userId
+    let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
+    console.log(availableUserId)
+    if (!availableUserId) {
+      return res.status(404).send({ status: false, message: "User not found" })
+    }
 
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
@@ -44,9 +45,9 @@ const createBook = async function (req, res) {
     //create book data
     let bookData = await bookModel.create(data)
     res.status(201).send({status: true,message: "Books created successfully",data: bookData})
-//   }// catch (err) {
-//     res.status(500).send({status: false,Error: err.message})
-//   }
+  } catch (err) {
+    res.status(500).send({status: false,Error: err.message})
+  }
 }
 
 ////////////////////////////////////////////////////get Book by query params////////////////////////////////////////////////////////
@@ -112,7 +113,7 @@ const getBookById = async (req, res) => {
 
 const updateBookDetails = async function (req, res) {
   try {
-    let bookId = req.params.bookId
+    const bookId = req.params.bookId
 
     if (!bookId) return res.status(400).send({status: false,message: "userId not Exist"})
 
@@ -121,7 +122,7 @@ const updateBookDetails = async function (req, res) {
 
     if(searchBook.isDeleted == true) return res.status(404).send({status: false, message: "Data already deleted"})
     
-    let data = req.body
+    const data = req.body
     if (checkData(data)) return res.status(400).send({status: false,message: "Data is required for update the document"})
 
     if(data.hasOwnProperty('title') || data.hasOwnProperty('ISBN')){
@@ -149,17 +150,15 @@ const deleteBooks = async (req, res) => {
   
           if (Object.keys(bookId).length == 0) return res.status(404).send({ msg: "bookId is not found" });   //if blogId is not present then it gives the error
   
-          let findBook = await blogsModel.findById(blogId) //it will find out the bookId 
-          if (!findBook) return res.status(404).send({ status: false, Error: "Invalid bookId" }) //validate the bookID 
+          let findBook = await bookModel.findById(bookId) //it will find out the bookId 
+          if (!findBook) return res.status(404).send({ status: false, message: "Invalid bookId" }) //validate the bookID 
   
-          if (findBook.isDeleted == true) return res.status(404).send({ status: false, Error: "Book is Already Deleted" }) //it will check wether the blogId is deleted or not if yes gives a message blogId is already deleted
-  
-           //here it will find and update the bookId Deleted to true
-          let updatedBook = await blogsModel.findOneAndUpdate({ _id: findBook._id }, { isDeleted: true, deletedAt: new Date()}, { new: true });
-  
-          if (!updatedBook) return res.status(404).send({ status: false, Error: "Failed to Delete Data" })
-  
-          res.status(200).send({ status: true,message: "Deleted Successfully", data: updatedBook }) //it will send the updated data
+          if (findBook.isDeleted == false) {
+       let updatedBook = await bookModel.findOneAndUpdate({ _id: findBook._id }, { isDeleted: true, deletedAt: new Date()}, { new: true });
+         if(!updatedBook) return res.status(404).send({ status: false, message: "deleted failed"})
+        res.status(200).send({ status: true,message: "Deleted Successfully", data: updatedBook })
+        }else {return res.status(400).send({status: false, message:"Already Deleted"})}
+        
       }
       catch (err) {
           console.log(err)
