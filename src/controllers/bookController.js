@@ -1,5 +1,6 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
+const reviewModel = require("../models/reviewModel")
 
 
 
@@ -13,6 +14,7 @@ const createBook = async function (req, res) {
     let data = req.body
 
     if (checkData(data)) return res.status(400).send({status: false,message: "Enter Books Details"})
+    if(isValidObjectId(data)) return res.status(400).send({status: false, message: "Invalid userId"})
 
     //check the value is present or not
     if (!data.title) return res.status(400).send({status: false,message: "Book Title is required"})
@@ -26,9 +28,7 @@ const createBook = async function (req, res) {
     let data1 = data.userId
     let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
     console.log(availableUserId)
-    if (!availableUserId) {
-      return res.status(404).send({ status: false, message: "User not found" })
-    }
+    if (!availableUserId) return res.status(404).send({ status: false, message: "User not found" })
 
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
@@ -98,11 +98,13 @@ const getBookById = async (req, res) => {
     let getBook = await bookModel.findById(bookId).select({__v: 0})
     if (!getBook) return res.status(404).send({status: false,message: "No Book found"})
 
-    let {...data} = getBook._doc
+    if(getBook.isDeleted == true) return res.status(404).send({ status: false, message: "Book not found or have already been deleted" })
 
-    data.reviewsData = []
+    let getReviews = await reviewModel.find({ bookId: getBook._id, isDeleted: false }).select({ isDeleted: 0, __v: 0, createdAt: 0, updatedAt: 0 });
 
-    res.status(200).send({status: true,message: "Books lists",data: data})
+    getBook._doc.reviewsData = getReviews
+
+    res.status(200).send({ status: true, message: "Books list", data: getBook })
   } catch (err) {
     return res.status(500).send({status: false,Error: err.message})
   }
