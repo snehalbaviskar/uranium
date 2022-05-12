@@ -25,10 +25,10 @@ const createBook = async function (req, res) {
     if (!data.subcategory) return res.status(400).send({status: false,message: "subcategory is required"})
 
     //check the userId in model
-    let data1 = data.userId
-    let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
-    console.log(availableUserId)
-    if (!availableUserId) return res.status(404).send({ status: false, message: "User not found" })
+    // let data1 = data.userId
+    // let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
+    // console.log(availableUserId)
+    // if (!availableUserId) return res.status(404).send({ status: false, message: "User not found" })
 
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
@@ -150,7 +150,7 @@ const deleteBooks = async (req, res) => {
   try {
           let bookId = req.params.bookId; //collect the data from params 
   
-          if (Object.keys(bookId).length == 0) return res.status(404).send({ msg: "bookId is not found" });   //if blogId is not present then it gives the error
+          if (Object.keys(bookId).length == 0) return res.status(404).send({ msg: "bookId is not found" });   //if bookId is not present then it gives the error
   
           let findBook = await bookModel.findById(bookId) //it will find out the bookId 
           if (!findBook) return res.status(404).send({ status: false, message: "Invalid bookId" }) //validate the bookID 
