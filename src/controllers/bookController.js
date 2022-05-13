@@ -24,10 +24,9 @@ const createBook = async function (req, res) {
     if (!data.subcategory) return res.status(400).send({status: false,message: "subcategory is required"})
 
     //check the userId in model
-    // let data1 = data.userId
-    // let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
-    // console.log(availableUserId)
-    // if (!availableUserId) return res.status(404).send({ status: false, message: "User not found" })
+    let data1 = data.userId
+    let availableUserId = await userModel.findOne({_id: data1, isDeleted:false})
+    if (!availableUserId) return res.status(404).send({ status: false, message: "User not found" })
 
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
