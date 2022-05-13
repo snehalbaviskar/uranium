@@ -5,7 +5,7 @@ const reviewModel = require("../models/reviewModel")
 
 
 
-const {checkData,validString,isValidObjectId,validDate} = require("../validator/validation")
+const {checkData,validString,isValidObjectId,validDate, validISBN} = require("../validator/validation")
 
 ////////////////////////////////////////////////////create Book////////////////////////////////////////////////////////////////////
 
@@ -33,6 +33,8 @@ const createBook = async function (req, res) {
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
       return res.status(400).send({status: false,message: "data should not contain Numbers its only contains Characters"})}
+
+    if(validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"})  
 
     //check title and isbn is unique or not
     let checkUniqueValues = await bookModel.findOne({$or: [{title: data.title}, {ISBN: data.ISBN}]})

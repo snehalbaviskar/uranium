@@ -67,5 +67,13 @@ const checkData = (object) => {
       return true;
     }
   }
+
+  const validISBN = (Number) => {
+    if (/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(Number)) { 
+      return true
+    }else {
+      return false;
+    };
+  };
   
-  module.exports = { isValid, checkData, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId ,validDate};
+  module.exports = { isValid, checkData, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId ,validDate, validISBN};
