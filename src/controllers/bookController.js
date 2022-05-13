@@ -14,7 +14,6 @@ const createBook = async function (req, res) {
     let data = req.body
 
     if (checkData(data)) return res.status(400).send({status: false,message: "Enter Books Details"})
-    if(isValidObjectId(data)) return res.status(400).send({status: false, message: "Invalid userId"})
 
     //check the value is present or not
     if (!data.title) return res.status(400).send({status: false,message: "Book Title is required"})
@@ -34,14 +33,13 @@ const createBook = async function (req, res) {
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
       return res.status(400).send({status: false,message: "data should not contain Numbers its only contains Characters"})}
 
-    if(validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"})  
+    if(!validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"})  
 
     //check title and isbn is unique or not
     let checkUniqueValues = await bookModel.findOne({$or: [{title: data.title}, {ISBN: data.ISBN}]})
     if (checkUniqueValues) return res.status(400).send({status: false,message: "Title or ISBN is already exist"})
 
     //set date in releasedAt
-   // data.releasedAt = currentFullDate();
    if(validDate(data.releasedAt)) return res.status(400).send({status: false, message: "enter a valid released date in (YYYY-DD-MM) format"})
 
     //create book data
@@ -58,6 +56,7 @@ const getFilteredBooks = async (req, res) => {
   try {
     let data = req.query;
 
+    //check userId is present or not
     if (data.hasOwnProperty('userId')) {
       if (!isValidObjectId(data.userId)) return res.status(400).send({status: false,message: "Enter a valid user id"});
       let { ...tempData } = data;
@@ -71,6 +70,7 @@ const getFilteredBooks = async (req, res) => {
       if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
     }
 
+    // userid is not present
     if (checkData(data)) {
       let getBooks = await bookModel.find({isDeleted: false}).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,reviews: 1,releasedAt: 1});
 
@@ -80,7 +80,7 @@ const getFilteredBooks = async (req, res) => {
 
     data.isDeleted = false;
 
-    let getFilterBooks = await bookModel.find(data).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,reviews: 1, releasedAt: 1});
+    let getFilterBooks = await bookModel.find(data).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,subcategory: 1,reviews: 1, releasedAt: 1});
 
     if (getFilterBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
 
@@ -96,6 +96,8 @@ const getFilteredBooks = async (req, res) => {
 const getBookById = async (req, res) => {
   try {
     let bookId = req.params.bookId
+    
+    if(!bookId) return res.status(400).send({status: false,message: "Enter a book id" }) 
     if (!isValidObjectId(bookId)) return res.status(400).send({status: false,message: "Enter a correct book id" })
     let getBook = await bookModel.findById(bookId).select({__v: 0})
     if (!getBook) return res.status(404).send({status: false,message: "No Book found"})
@@ -133,6 +135,8 @@ const updateBookDetails = async function (req, res) {
       let checkTitleAndIsbn = await bookModel.findOne({$or: [{title: data.title}, {ISBN: data.ISBN}]})
       if (checkTitleAndIsbn) return res.status(400).send({status: false,message: "Title or ISBN already exist"})
     }
+
+    if(!validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"}) 
 
     if(validString(data.title) || validString(data.excerpt)) return res.status(400).send({status: false, message: "Data should not contain Numbers"})
 

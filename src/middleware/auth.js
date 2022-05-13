@@ -27,28 +27,24 @@ const authentication = async (req, res, next) => {
 const authorization = async (req, res, next) => {
     try{
         let token = req.headers["x-Api-key"]
-        if (!token) token = req.headers["x-api-key"]
+         token = req.headers["x-api-key"]
 
         let decodedToken = jwt.verify(token, "Uranium Project-3")
         if(!decodedToken) return res.status(400).send({status: false , message: "Invalid token id"})
 
         let loggedInUser = decodedToken.userId
      let userLogging;
-    //    let userLogging1;
-    //    let userLogging2;
 
         if(req.body.hasOwnProperty('userId')){
             if(!isValidObjectId(req.body.userId)) return res.status(400).send({status: false, message: "Enter a valid user Id"})
-            userLogging = req.body.userId
-            console.log("req.body",userLogging)
+             userLogging = req.body.userId
         }
 
         if(req.params.hasOwnProperty('bookId')){
             if(!isValidObjectId(req.params.bookId)) return res.status(400).send({status: false, message: "Enter a valid book id"})
             let bookData = await bookModel.findById(req.params.bookId)
             if(!bookData) return res.status(400).send({status: false, message: "Error! Please check book id and try again"})
-             userLogging = bookData.userId
-             console.log("BookModel",userLogging)
+             userLogging = bookData.userId.toString()
         }
 
         if(!userLogging) return res.status(400).send({status: false, message: "User Id is required"})
@@ -61,3 +57,6 @@ const authorization = async (req, res, next) => {
 }
 
 module.exports = {authentication, authorization}
+
+
+

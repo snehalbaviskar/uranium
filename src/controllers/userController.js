@@ -61,7 +61,7 @@ const loginUser = async (req, res) => {
         //token generation for the logged in user
         let token = jwt.sign({userId: getUserData._id,
             iat: Math.floor(Date.now() / 1000),           //issue date
-            exp: Math.floor(Date.now() / 1000) + 60 * 60   //expires in 1 hr
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24  //expires in 1 hr
         }, 
         "Uranium Project-3"
         );
