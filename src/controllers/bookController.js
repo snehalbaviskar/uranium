@@ -39,7 +39,7 @@ const createBook = async function (req, res) {
     if (checkUniqueValues) return res.status(400).send({status: false,message: "Title or ISBN is already exist"})
 
     //set date in releasedAt
-   if(validDate(data.releasedAt)) return res.status(400).send({status: false, message: "enter a valid released date in (YYYY-DD-MM) format"})
+   if(validDate(data.releasedAt)) return res.status(400).send({status: false, message: "enter a valid released date in (YYYY-MM-DD) format"})
 
     //create book data
     let bookData = await bookModel.create(data)
@@ -54,6 +54,8 @@ const createBook = async function (req, res) {
 const getFilteredBooks = async (req, res) => {
   try {
     let data = req.query;
+    console.log(data)
+
 
     //check userId is present or not
     if (data.hasOwnProperty('userId')) {
@@ -61,16 +63,19 @@ const getFilteredBooks = async (req, res) => {
       let { ...tempData } = data;
       delete(tempData.userId);
       let checkValues = Object.values(tempData);
+      //console.log(checkValues)
 
       if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
     } else {
       let checkValues = Object.values(data);
+      console.log(checkValues)
 
       if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
     }
 
     // userid is not present
     if (checkData(data)) {
+     
       let getBooks = await bookModel.find({isDeleted: false}).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,reviews: 1,releasedAt: 1});
 
       if (getBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
@@ -173,10 +178,6 @@ const deleteBooks = async (req, res) => {
       }
   
   }
-
-
-
-
 
 
 

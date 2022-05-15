@@ -46,7 +46,7 @@ const updateReview = async (req, res) => {
           const { review, rating, reviewedBy } = requestUpdateBody;
 
           if(!isValidObjectId(bookParams)) return res.status(400).send({status: false, message: "Enter a valid Book id"})
-          if(isValidObjectId(reviewParams)) return res.status(400).send({status: false, message: "Enter a valid Review id"})
+          if(!isValidObjectId(reviewParams)) return res.status(400).send({status: false, message: "Enter a valid Review id"})
           
           if(checkData(requestUpdateBody)) return res.status(400).send({status: false, message: "Data is required to update document"})
 
@@ -95,7 +95,7 @@ const deleteReview = async function (req, res) {
 
          
          if(!isValidObjectId(bookParams)) return res.status(400).send({status: false, message: "Enter a valid Book id"})
-         if(isValidObjectId(reviewParams)) return res.status(400).send({status: false, message: "Enter a valid Review id"})
+         if(!isValidObjectId(reviewParams)) return res.status(400).send({status: false, message: "Enter a valid Review id"})
 
          //finding book and checking whether it is deleted or not.
          let searchBook = await bookModel.findById({ _id: bookParams, isDeleted: false })
@@ -113,7 +113,7 @@ const deleteReview = async function (req, res) {
                  if (deleteReviewDetails) {
                      await bookModel.findOneAndUpdate({ _id: bookParams },{$inc:{ reviews: -1 }})
                  }
-                 return res.status(200).send({ status: true, message: "Review deleted successfully."})
+                 return res.status(200).send({ status: true, message: "Review deleted successfully.", data: deleteReviewDetails})
  
              } else {
                  return res.status(400).send({ status: false, message: "Unable to delete review details Review has been already deleted" })

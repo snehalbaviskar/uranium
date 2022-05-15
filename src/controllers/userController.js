@@ -1,7 +1,7 @@
 const userModel = require("../models/userModel")
 const jwt = require('jsonwebtoken')
 
-const { checkData, validTitle, validString, validMobileNum, validEmail, validPwd} = require("../validator/validation")
+const { checkData, validTitle, validString, validMobileNum, validEmail, validPwd, validNum, isValid} = require("../validator/validation")
 
 /////////////////////////////////////////////////create User////////////////////////////////////////////////////////////////////////////////
 
@@ -17,6 +17,10 @@ const createUser= async function(req, res) {
     if(!data.phone) return res.status(400).send({status: false, message: "Mobile number is required"})
     if(!data.email) return res.status(400).send({status: false, message: "Email ID is required"})
     if(!data.password) return res.status(400).send({status: false, message: "Password is required"})
+    if(!data.address) return res.status(400).send({status: false, message: "Address is required"})
+    if(!data.address.street) return res.status(400).send({status: false, message: "Street is required"})
+    if(!data.address.city) return res.status(400).send({status: false, message: "City is required"})
+    if(!data.address.pincode) return res.status(400).send({status: false, message: "Pincode is required"})
 
     //Data is valid or not
     if(validTitle(data.title)) return res.status(400).send({status: false, message: "Title should be one of Mr, Mrs or Miss"})
@@ -24,6 +28,12 @@ const createUser= async function(req, res) {
     if(validMobileNum(data.phone)) return res.status(400).send({status: false, message: "Enter a 10-digit phone number exluding (+91)"})
     if(validEmail(data.email)) return res.status(400).send({status: false, message: "Enter a valid email-id"})
     if(validPwd(data.password)) return res.status(400).send({status: false, message: "Password should be 8-15 characters long and must contain one of 0-9,A-Z,a-z and special characters"})
+
+    if(!isValid(data.address.street)) return res.status(400).send({status: false, message: "streetis only alphanumeric"})
+    if(validString(data.address.city)) return res.status(400).send({status: false, message: "city contains only character"})
+    if(!isValid(data.address.pincode)) return res.status(400).send({status: false, message: "Pincode contains only Number"})
+    
+    
 
     //check email and password
     let checkUniqueValues = await userModel.findOne({$or: [{phone: data.phone}, {email: data.email}]})
