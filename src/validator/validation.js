@@ -76,12 +76,9 @@ const checkData = (object) => {
     };
   };
 
-  const validNum = (Number) => {
-    if (/^[#.0-9a-zA-Z\s,-]+$/.test(Number)) {
-      return false
-    }else {
-      return true;
-    };
-  };
+  const isValidString = function (value) {
+    if (typeof value === "string" && value.trim().length === 0) return false;
+    return true;
+};
   
-  module.exports = { isValid, checkData, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId ,validDate, validISBN, validNum};
+  module.exports = { isValid, checkData, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId ,validDate, validISBN, isValidString};
