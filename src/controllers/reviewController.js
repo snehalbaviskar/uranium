@@ -99,11 +99,11 @@ const deleteReview = async function (req, res) {
 
          //finding book and checking whether it is deleted or not.
          let searchBook = await bookModel.findById({ _id: bookParams, isDeleted: false })
-         if (!searchBook) return res.status(400).send({ status: false, message: `Book does not exist by this ${bookParams}.` })
+         if (!searchBook) return res.status(404).send({ status: false, message: `Book does not exist by this ${bookParams}.` })
  
          //finding review and checking whether it is deleted or not.
          let searchReview = await reviewModel.findById({ _id: reviewParams })
-         if (!searchReview) return res.status(400).send({ status: false, message: `Review does not exist by this ${reviewParams}.` })
+         if (!searchReview) return res.status(404).send({ status: false, message: `Review does not exist by this ${reviewParams}.` })
 
          //verifying the attribute isDeleted:false or not for both books and reviews documents.
          if (searchBook.isDeleted == false) {
