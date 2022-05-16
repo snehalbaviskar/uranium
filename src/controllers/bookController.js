@@ -144,7 +144,7 @@ const updateBookDetails = async function (req, res) {
 
     if(validDate(data.releasedAt)) return res.status(200).send({status: false, message: "Enter a valid released date in (YYYY-MM-DD format"})
 
-    let changeDetails = await bookModel.findOneAndUpdate({_id: bookId},...data, {new: true})
+    let changeDetails = await bookModel.findOneAndUpdate({_id: bookId}, data, {new: true})
     res.status(200).send({status: true,message: "Successfully updated book details.", data: changeDetails})
   } catch (err) {
     return res.status(500).send({status: false,Error: err.message})
