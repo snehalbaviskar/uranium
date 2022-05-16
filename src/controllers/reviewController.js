@@ -131,5 +131,3 @@ const deleteReview = async function (req, res) {
 module.exports = {review, updateReview, deleteReview}
 
 
-// const getId = req.params
-//          if(findBook.isDeleted == true) return res.status(404).send({status: false, message: "Data already deleted you cant upadated"})
