@@ -32,6 +32,7 @@ const createBook = async function (req, res) {
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
       return res.status(400).send({status: false,message: "data should not contain Numbers its only contains Characters"})}
 
+    //validate the ISBN
     if(!validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"})  
 
     //check title and isbn is unique or not
@@ -52,85 +53,46 @@ const createBook = async function (req, res) {
 ////////////////////////////////////////////////////get Book by query params////////////////////////////////////////////////////////
 
 const getFilteredBooks = async (req, res) => {
-  // try {
-  //   let data = req.query;
-  //   console.log(data)
+  try {
+    let data = req.query;
+  
+    if (data.hasOwnProperty('userId')) {
+      if (!isValidObjectId(data.userId)) return res.status(400).send({status: false,message: "Enter a valid user id"});
+      let { ...tempData } = data;
+      delete(tempData.userId);
+      let checkValues = Object.values(tempData);
 
+      if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
+    } else {
+      let checkValues = Object.values(data);
 
-  //   //check userId is present or not
-  //   if (data.hasOwnProperty('userId')) {
-  //     if (!isValidObjectId(data.userId)) return res.status(400).send({status: false,message: "Enter a valid user id"});
-  //     let { ...tempData } = data;
-  //     delete(tempData.userId);
-  //     let checkValues = Object.values(tempData);
-  //     //console.log(checkValues)
+      if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
+    }
 
-  //     if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
-  //   } else {
-  //     let checkValues = Object.values(data);
-  //     //console.log(checkValues)
-
-  //     if (validString(checkValues)) return res.status(400).send({status: false,message: "Filter data should not contain numbers excluding user id"})
-  //   }
-
-  //   // userid is not present
-  //   if (checkData(data)) {
+    
+    if (checkData(data)) {
       
      
-  //     let getBooks = await bookModel.find({isDeleted: false,}).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,reviews: 1,releasedAt: 1});
+      let getBooks = await bookModel.find({isDeleted: false,}).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,reviews: 1,releasedAt: 1});
 
-  //     if (getBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
-  //     return res.status(200).send({status: true,message: "Books list",data: getBooks});
-  //   }
-
-  //   data.isDeleted = false;
-
-  //   let getFilterBooks = await bookModel.find(data).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,subcategory: 1,reviews: 1, releasedAt: 1});
-
-  //   if (getFilterBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
-
-  //   res.status(200).send({status: true,message: "Books list",data: getFilterBooks});
-
-  // } catch (err) {
-  //   return res.status(500).send({status: false,Error: err.message})
-  // }
-
-  try {
-    let queryParams = req.query;
-
-    if (checkData(queryParams)) return res.status(400).send({ status: false, msg: "Please Provide Data in params" })
-
-    let filterQuery = { ...queryParams, isDeleted: false, deletedAt: null };
-    console.log(filterQuery)
-
-    const { userId, category, subcategory } = queryParams
-
-
-    if (!isValidString(userId)) {
-        return res.status(400).send({ status: false, msg: "userId field cannot be empty" })
+      if (getBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
+      return res.status(200).send({status: true,message: "Books list",data: getBooks});
     }
 
+    data.isDeleted = false;
 
-    if (!isValidString(category)) {
-        return res.status(400).send({ status: false, msg: "please provide category field." })
-    }
+    let getFilterBooks = await bookModel.find(data).sort({title: 1}).select({title: 1,excerpt: 1,userId: 1,category: 1,subcategory: 1,reviews: 1, releasedAt: 1});
 
-    if (!isValidString(subcategory)) {
-        return res.status(400).send({ status: false, msg: "please provide subcategory field." })
-    }
+    if (getFilterBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
 
-    const books = await bookModel.find(filterQuery).select({ title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 }).sort({ title: 1 });
-    
-    if(queryParams.isDeleted == true) return res.status(404).send({ status: false, message: "Book not found or have already been deleted" })
+    res.status(200).send({status: true,message: "Books list",data: getFilterBooks});
 
-    if (!isValid(books)) {
-        return res.status(404).send({ status: false, message: "No booksfound" });
-    }
-    res.status(200).send({ status: true, message: "Books list", data: books });
-} catch (error) {
-    res.status(500).send({ status: false, Error: error.message });
+  } catch (err) {
+    return res.status(500).send({status: false,Error: err.message})
+  }
 }
- }
+
+ 
 
 /////////////////////////////////////////////////////////////get Book by path params//////////////////////////////////////////////////
 

@@ -75,6 +75,8 @@ const loginUser = async (req, res) => {
         }, 
         "Uranium Project-3"
         );
+        //set the headers
+        res.status(200).setHeader("x-api-key", token);
 
         res.status(200).send({status: true, message: "user login successfully", data: {token: token}})
         
