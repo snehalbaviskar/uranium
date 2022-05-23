@@ -13,7 +13,7 @@ router.post("/register", createUser )
 router.post("/login", loginUser)
 
 //book API
-router.post("/books", authentication, authorization, createBook )
+router.post("/books", createBook )
 router.get("/books", authentication, getFilteredBooks)
 router.get("/books/:bookId",authentication, getBookById)
 router.put("/books/:bookId",authentication, authorization,  updateBookDetails)

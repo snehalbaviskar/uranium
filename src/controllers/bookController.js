@@ -1,17 +1,52 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 const reviewModel = require("../models/reviewModel")
+const aws = require("aws-sdk")
+
+aws.config.update({
+  accessKeyId: "AKIAY3L35MCRUJ6WPO6J", // id
+  secretAccessKey: "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", // like secret password
+  region: "ap-south-1"
+});
+
+// this function uploads file to AWS and gives back the url for the file
+let uploadFile = async(file) => {
+  return new Promise(function(resolve, reject) { 
+
+      // Create S3 service object
+      let s3 = new aws.S3({ apiVersion: "2006-03-01" });
+      var uploadParams = {
+          ACL: "public-read", // this file is publically readable
+          Bucket: "classroom-training-bucket", 
+          Key: "snehal/" + new Date() + file.originalname, 
+          Body: file.buffer,
+      };
+
+      // Callback - function provided as the second parameter ( most oftenly)
+      s3.upload(uploadParams, function(err, data) {
+          if (err) {
+              return reject({ "error": err });
+          }
+          console.log(data)
+          console.log(`File uploaded successfully. ${data.Location}`);
+          return resolve(data.Location); //HERE 
+      });
+  });
+};
 
 
 
 
-const {checkData,validString,isValidObjectId,validDate, validISBN,isValidString,isValid} = require("../validator/validation")
+
+
+const {checkData,validString,isValidObjectId,validDate,} = require("../validator/validation")
 
 ////////////////////////////////////////////////////create Book////////////////////////////////////////////////////////////////////
 
 const createBook = async function (req, res) {
   try {
     let data = req.body
+    
 
     if (checkData(data)) return res.status(400).send({status: false,message: "Enter Books Details"})
 
@@ -30,10 +65,7 @@ const createBook = async function (req, res) {
 
     //validate title, excerpt, category,subcategory
     if (validString(data.title) || validString(data.excerpt) || validString(data.category) || validString(data.subcategory)) {
-      return res.status(400).send({status: false,message: "data should not contain Numbers its only contains Characters"})}
-
-    //validate the ISBN
-    if(!validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"})  
+      return res.status(400).send({status: false,message: "data should not contain Numbers its only contains Characters"})}  
 
     //check title and isbn is unique or not
     let checkUniqueValues = await bookModel.findOne({$or: [{title: data.title}, {ISBN: data.ISBN}]})
@@ -41,6 +73,13 @@ const createBook = async function (req, res) {
 
     //set date in releasedAt
    if(validDate(data.releasedAt)) return res.status(400).send({status: false, message: "enter a valid released date in (YYYY-MM-DD) format"})
+   let files = req.files;
+   if (files && files.length > 0) {
+       //upload to s3 and return true..incase of error in uploading this will goto catch block( as rejected promise)
+      var uploadedFileURL = await uploadFile(files[0]); // expect this function to take file as input and give url of uploaded file as output 
+       }
+       data.coverLink = uploadedFileURL
+
 
     //create book data
     let bookData = await bookModel.create(data)
@@ -78,6 +117,8 @@ const getFilteredBooks = async (req, res) => {
       if (getBooks.length == 0) return res.status(404).send({status: false,message: "No books found"});
       return res.status(200).send({status: true,message: "Books list",data: getBooks});
     }
+
+    //filter query
 
     data.isDeleted = false;
 
@@ -140,9 +181,8 @@ const updateBookDetails = async function (req, res) {
     }
 
     if(validString(data.title) || validString(data.excerpt)) return res.status(400).send({status: false, message: "Data should not contain Numbers"})
-    if(!validISBN(data.ISBN)) return res.status(400).send({status: false, message: "Enter a valid ISBN Number"}) 
 
-    if(validDate(data.releasedAt)) return res.status(200).send({status: false, message: "Enter a valid released date in (YYYY-MM-DD format"})
+    if(!validDate(data.releasedAt)) return res.status(200).send({status: false, message: "Enter a valid released date in (YYYY-MM-DD format"})
 
     let changeDetails = await bookModel.findOneAndUpdate({_id: bookId}, { title: data.title, excerpt: data.excerpt, releasedAt: data.releasedAt, ISBN: data.ISBN }, {new: true})
     res.status(200).send({status: true,message: "Successfully updated book details.", data: changeDetails})
